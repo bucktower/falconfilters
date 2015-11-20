@@ -16,6 +16,8 @@ public class FalconShopFrame extends JFrame {
 
 	private FalconPanel thePanel;
 	
+	public static String versionString = "0.0.1";
+	
 	private String[][] fullOptions;
 	
 	public FalconShopFrame() 
@@ -68,6 +70,8 @@ public class FalconShopFrame extends JFrame {
 			} else if(myInput.equals("exit") | myInput == ":pq" | myInput == "q" | myInput == "quit") {
 				System.out.println("Goodbye!");
 				keepRunning = false;
+			} else if(myInput.equals("v") | myInput.equals("version")) {
+				System.out.println("You are running FalconFilters " + versionString);
 			} else {
 				for(int b = 0; b < fullOptions.length; b++) {
 					for(int a = 0; a < fullOptions[0].length; a++) {
