@@ -116,6 +116,32 @@ public class FalconPanel extends JPanel {
 					}
 				}
 				break;
+			case 8: // Gaussian Blur
+				for(int timesOver = 0; timesOver < 8; timesOver++) {
+					destinationImage = new BufferedImage(sourceImage.getWidth(),sourceImage.getHeight(),BufferedImage.TYPE_INT_RGB);
+					for(int i = 1; i < destinationImage.getWidth()-1; i++) {
+						for(int j = 1; j < destinationImage.getHeight()-1; j++) {
+							int rSum = 0;
+							int gSum = 0;
+							int bSum = 0;
+							for(int xx = -1; xx < 2; xx++) {
+								for(int yy = -1; yy < 2; yy++) {
+									rSum += getRedAtPoint(i+xx, j+yy);
+									gSum += getGreenAtPoint(i+xx, j+yy);
+									bSum += getBlueAtPoint(i+xx, j+yy);
+								}
+							}
+							rSum /= 9;
+							gSum /= 9;
+							bSum /= 9;
+							
+							destinationImage.setRGB(i, j, (rSum<<16)+(gSum<<8)+bSum);
+						}
+						repaint();
+					}
+					sourceImage = destinationImage;
+				}
+				break;
 			case -1:
 			default:
 				System.out.println("Default Print Mode");

@@ -43,7 +43,7 @@ public class FalconShopFrame extends JFrame {
 		 * support for that, although the [x][0] cell of each array will have the proper, full command.
 		 */
 		String[] options = {"red", "green", "blue", "flip-horiz", "flip-vert", "grayscale", "techno-noise-dark",
-				"techno-noise-warm"};
+				"techno-noise-warm", "gaussian-blur"};
 		fullOptions = new String[options.length][5];
 		for(int a = 0; a < fullOptions.length; a++) {
 			fullOptions[a][0] = options[a];
@@ -52,6 +52,8 @@ public class FalconShopFrame extends JFrame {
 		fullOptions[5][2] = "bw";
 		fullOptions[6][2] = "tnd";
 		fullOptions[7][2] = "tnw";
+		fullOptions[8][2] = "gaus";
+		fullOptions[8][3] = "blur";
 		// END Extra Options
 				
 		Scanner keyboard = new Scanner(System.in);
@@ -75,12 +77,15 @@ public class FalconShopFrame extends JFrame {
 			} else {
 				for(int b = 0; b < fullOptions.length; b++) {
 					for(int a = 0; a < fullOptions[0].length; a++) {
-						if(myInput.toUpperCase().equals(fullOptions[b][a].toUpperCase())) {
-							userSelect = b;
+						if(fullOptions[b][a] != null) {
+							if(myInput.toUpperCase().equals(fullOptions[b][a].toUpperCase())) {
+								userSelect = b;
+								thePanel.analyzeSource(userSelect);
+							}
+
 						}
 					}
 				}
-				thePanel.analyzeSource(userSelect);
 			}
 		}
 	}
