@@ -43,7 +43,7 @@ public class FalconShopFrame extends JFrame {
 		 * support for that, although the [x][0] cell of each array will have the proper, full command.
 		 */
 		String[] options = {"red", "green", "blue", "flip-horiz", "flip-vert", "grayscale", "techno-noise-dark",
-				"techno-noise-warm", "gaussian-blur"};
+				"techno-noise-warm", "gaussian-blur", "k-means"};
 		fullOptions = new String[options.length][5];
 		for(int a = 0; a < fullOptions.length; a++) {
 			fullOptions[a][0] = options[a];
@@ -54,6 +54,8 @@ public class FalconShopFrame extends JFrame {
 		fullOptions[7][2] = "tnw";
 		fullOptions[8][2] = "gaus";
 		fullOptions[8][3] = "blur";
+		fullOptions[9][2] = "kmeans";
+		fullOptions[9][3] = "k";
 		// END Extra Options
 				
 		Scanner keyboard = new Scanner(System.in);
@@ -69,7 +71,7 @@ public class FalconShopFrame extends JFrame {
 					System.out.println(opt.toUpperCase());
 				}
 				System.out.println();
-			} else if(myInput.equals("exit") | myInput == ":pq" | myInput == "q" | myInput == "quit") {
+			} else if(myInput.equals("exit") | myInput == ":pq" | myInput == "q" | myInput == "quit" | myInput == "stop") {
 				System.out.println("Goodbye!");
 				keepRunning = false;
 			} else if(myInput.equals("v") | myInput.equals("version")) {
@@ -82,7 +84,6 @@ public class FalconShopFrame extends JFrame {
 								userSelect = b;
 								thePanel.analyzeSource(userSelect);
 							}
-
 						}
 					}
 				}

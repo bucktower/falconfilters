@@ -3,6 +3,8 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Random;
 import java.util.Scanner;
 
 import javax.imageio.ImageIO;
@@ -11,13 +13,25 @@ import javax.swing.JPanel;
 public class FalconPanel extends JPanel {
 		
 	private BufferedImage sourceImage, destinationImage;
-	private String filename = "USGS_Prairie_Falcon.jpg";
+	private String filename = "KMeansTest1.png";
+	
+	private Random randGen;
+	
 	/** 
 	 * constructor loads the file in filename and creates an identically sized, blank image.
 	 */
 	public FalconPanel() 
 	{
 		super();
+		
+		randGen = new Random();
+		
+		System.out.println("Please enter the name of the picture file you would like to use (include extension)");
+		Scanner keyboard = new Scanner(System.in);
+		String myFile = keyboard.nextLine();
+		if(!myFile.isEmpty()) {
+			filename = myFile;
+		}
 
 		try
 		{
@@ -98,7 +112,8 @@ public class FalconPanel extends JPanel {
 			case 5: //"grayscale":
 				for(int i = 0; i < destinationImage.getWidth(); i++) {
 					for(int j = 0; j < destinationImage.getHeight(); j++) {
-						destinationImage.setRGB(i, j, (getBrightnessAtPoint(i,j)));
+						int sourceColor = getBrightnessAtPoint(i,j);
+						destinationImage.setRGB(i, j, (sourceColor | sourceColor<<8 | sourceColor<<16));
 					}
 				}
 				break;
@@ -141,6 +156,87 @@ public class FalconPanel extends JPanel {
 					}
 					sourceImage = destinationImage;
 				}
+				break;
+			case 9: // K-means
+				ArrayList<VotingPoint> pixelList = new ArrayList<VotingPoint>();
+				ArrayList<VotingPoint> meanList = new ArrayList<VotingPoint>();
+				ArrayList<Color> colorList = new ArrayList<Color>();
+				
+				// how many random color reference pixels we want (groups)
+				// TODO: user enter randSpots ("Use the Scanner, Buck!")
+				int randSpots = 6;
+				int timesOver = 9;
+				
+				// making the colors. math to art, amazing.
+				for(int numColors = 0; numColors < randSpots; numColors++) {
+					// creating a color with randomly-generated RGB values
+					colorList.add(new Color(randGen.nextInt(255), randGen.nextInt(255), randGen.nextInt(255)));
+				}
+				
+				// voting point for every pixel if brightness lower than 25%
+				for(int x = 0; x < destinationImage.getWidth(); x++) {
+					for(int y = 0; y < destinationImage.getWidth(); y++) {
+						if(getBrightnessAtPoint(x,y) < 63) { // 63 = ~25% brightness
+							pixelList.add(new VotingPoint(x,y));
+						}
+					}
+				}
+								
+				// pixel list with 6 of the random pixels from the blobs
+				for(int g = 0; g < randSpots; g++) {
+					meanList.add(pixelList.get(randGen.nextInt(pixelList.size())));
+//					System.out.println(meanList.get(g));
+				}
+				
+				for(int numTimesOver = 0; numTimesOver < timesOver; numTimesOver++) {
+					// putting in bins
+					for(VotingPoint pt: pixelList) {
+						// keeping track of the record min dist, start off with -1 since there's no such thing as neg dist
+						int minDistRecord = -1;
+						
+						for(int checks = 0; checks < randSpots; checks++) {
+							// get dist
+							int distToBin = pt.distanceSquared(meanList.get(checks).getX(), meanList.get(checks).getY());
+							if(minDistRecord == -1 || distToBin < minDistRecord) {
+								// update record min dist & set to record dist bin
+								minDistRecord = distToBin;
+								pt.setWhichBin(checks);
+							}
+						}
+					}
+					// resetting the averages
+					for(int numBins = 0; numBins < randSpots; numBins++) {
+						int newAvgX = 0;
+						int newAvgY = 0;
+						int numPts = 0;
+						
+						for(VotingPoint px: pixelList) {
+							if(px.getWhichBin() == numBins) {
+								newAvgX += px.getX();
+								newAvgY += px.getY();
+								numPts++;
+							}
+						}
+						newAvgX /= numPts;
+						newAvgY /= numPts;
+						
+						// resetting the mean point of the bin to the new avg
+						meanList.set(numBins, new VotingPoint(newAvgX,newAvgY));
+					}
+				}
+				
+				// setting bg (all) to white
+				for(int x = 0; x < destinationImage.getWidth(); x++) {
+					for(int y = 0; y < destinationImage.getWidth(); y++) {
+						destinationImage.setRGB(x, y, (1<<24) - 1);
+					}
+				}
+				
+				for(VotingPoint pt: pixelList) {
+					destinationImage.setRGB(pt.getX(), pt.getY(), colorList.get(pt.getWhichBin()).getRGB());
+				}
+				
+				System.out.println("Done!");
 				break;
 			case -1:
 			default:
@@ -202,8 +298,8 @@ public class FalconPanel extends JPanel {
 	public int getBrightnessAtPoint(int x, int y)
 	{
 		int sourceColor = (getRedAtPoint(x,y) + getBlueAtPoint(x,y) + getBlueAtPoint(x,y))/3;
-		int color = sourceColor | sourceColor<<8 | sourceColor<<16;
-		return color;
+//		int color = sourceColor | sourceColor<<8 | sourceColor<<16;
+		return sourceColor;
 	}
 	
 }
