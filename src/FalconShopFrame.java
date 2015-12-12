@@ -3,6 +3,7 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GridLayout;
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
+import java.io.File;
 import java.util.Scanner;
 
 import javax.swing.JFrame;
@@ -43,11 +44,25 @@ public class FalconShopFrame extends JFrame {
 		 * support for that, although the [x][0] cell of each array will have the proper, full command.
 		 */
 		String[] options = {"red", "green", "blue", "flip-horiz", "flip-vert", "grayscale", "techno-noise-dark",
-				"techno-noise-warm", "gaussian-blur", "k-means"};
+				"techno-noise-warm", "gaussian-blur", "k-means", "transfer"};
 		fullOptions = new String[options.length][5];
 		for(int a = 0; a < fullOptions.length; a++) {
 			fullOptions[a][0] = options[a];
 		}
+		// Descriptions
+		fullOptions[0][1] = "Take out all other colors but red";
+		fullOptions[1][1] = "Take out all other colors but green";
+		fullOptions[2][1] = "Take out all other colors but blue";
+		fullOptions[3][1] = "Flip the image horizontally";
+		fullOptions[4][1] = "Flip the image vertically";
+		fullOptions[5][1] = "Turn to black & white";
+		fullOptions[6][1] = "Craziness with a darker color pallette";
+		fullOptions[7][1] = "Craziness with a warmer color palette";
+		fullOptions[8][1] = "Blur. Like a Gauss.";
+		fullOptions[9][1] = "K-Means blob recognition";
+		fullOptions[10][1] = "Transfer the destination image to the source image";
+		// END Descriptions
+		
 		// Extra Options (alternate commands) are manually added below
 		fullOptions[5][2] = "bw";
 		fullOptions[6][2] = "tnd";
@@ -56,14 +71,19 @@ public class FalconShopFrame extends JFrame {
 		fullOptions[8][3] = "blur";
 		fullOptions[9][2] = "kmeans";
 		fullOptions[9][3] = "k";
+		fullOptions[10][2] = "t";
 		// END Extra Options
 				
 		Scanner keyboard = new Scanner(System.in);
 		boolean keepRunning = true;
 		
+		int effectNum = 1;
+		
 		int userSelect = -1;
 		while(keepRunning) {
-			System.out.println("Please enter the mode you would like to use:");
+			System.out.println("FALCONFILTERS (EFFECT " + effectNum + ")\n"
+								+ "Please enter the mode you would like to use:"
+								+ "\n(type 'help' for a list of modes)");
 			String myInput = keyboard.nextLine();
 			if(myInput.equals("help")) {
 				System.out.println("These are the available commands:");
@@ -71,7 +91,7 @@ public class FalconShopFrame extends JFrame {
 					System.out.println(opt.toUpperCase());
 				}
 				System.out.println();
-			} else if(myInput.equals("exit") | myInput == ":pq" | myInput == "q" | myInput == "quit" | myInput == "stop") {
+			} else if(myInput.equals("exit") | myInput.equals(":pq") | myInput.equals("q") | myInput.equals("quit") | myInput.equals("stop")) {
 				System.out.println("Goodbye!");
 				keepRunning = false;
 			} else if(myInput.equals("v") | myInput.equals("version")) {
@@ -87,6 +107,7 @@ public class FalconShopFrame extends JFrame {
 						}
 					}
 				}
+				effectNum++;
 			}
 		}
 	}

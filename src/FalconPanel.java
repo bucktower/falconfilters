@@ -17,6 +17,8 @@ public class FalconPanel extends JPanel {
 	
 	private Random randGen;
 	
+	private Scanner keyboard;
+	
 	/** 
 	 * constructor loads the file in filename and creates an identically sized, blank image.
 	 */
@@ -26,27 +28,43 @@ public class FalconPanel extends JPanel {
 		
 		randGen = new Random();
 		
-		System.out.println("Please enter the name of the picture file you would like to use (include extension)");
-		Scanner keyboard = new Scanner(System.in);
-		String myFile = keyboard.nextLine();
-		if(!myFile.isEmpty()) {
-			filename = myFile;
-		}
+		File folder = new File(".");
+		File[] listOfFiles = folder.listFiles();
+		
+		boolean keepOn = true;
+		
+		while(keepOn) {
+			System.out.println("Please enter the name of the picture file you would like to use (include extension)\n"
+								+ "(leave blank for default k-means picture, type 'help' for a list of files in the current directory)");
+			keyboard = new Scanner(System.in);
+			String myFile = keyboard.nextLine();
+			if(myFile.equals("help")) {
 
-		try
-		{
-		   File file = new File(this.filename);
-
-		   if (file.canRead()) 
-		   {
-			   sourceImage = ImageIO.read(file);
-		   }
-		   else
-			   throw new RuntimeException("Could not open file.");
-		}
-		catch (IOException ioe)
-		{
-			ioe.printStackTrace();
+				System.out.println("Files currently in the directory:");
+				for(int a = 0; a < listOfFiles.length; a++) {
+					System.out.println(listOfFiles[a]);
+				}
+				continue;
+			} else if(!myFile.isEmpty()) {
+				filename = myFile;
+				keepOn = false;
+			}
+			try
+			{
+			   File file = new File(this.filename);
+	
+			   if (file.canRead()) 
+			   {
+				   sourceImage = ImageIO.read(file);
+				   keepOn = false;
+			   }
+			   else
+				   throw new RuntimeException("Could not open file.");
+			}
+			catch (IOException ioe)
+			{
+				ioe.printStackTrace();
+			}
 		}
 		destinationImage = new BufferedImage(sourceImage.getWidth(),sourceImage.getHeight(),
                 BufferedImage.TYPE_INT_RGB);
@@ -133,7 +151,6 @@ public class FalconPanel extends JPanel {
 				break;
 			case 8: // Gaussian Blur
 				for(int timesOver = 0; timesOver < 8; timesOver++) {
-					destinationImage = new BufferedImage(sourceImage.getWidth(),sourceImage.getHeight(),BufferedImage.TYPE_INT_RGB);
 					for(int i = 1; i < destinationImage.getWidth()-1; i++) {
 						for(int j = 1; j < destinationImage.getHeight()-1; j++) {
 							int rSum = 0;
@@ -164,8 +181,10 @@ public class FalconPanel extends JPanel {
 				
 				// how many random color reference pixels we want (groups)
 				// TODO: user enter randSpots ("Use the Scanner, Buck!")
-				int randSpots = 6;
-				int timesOver = 9;
+				System.out.println("How many random spots (k) do you want?  (Recommended = 6)");
+				int randSpots = Integer.parseInt(keyboard.nextLine());
+				System.out.println("How many times should a re-averaging occur?\n(Recommended = 40, just to be safe, or 10 if you're more of a risk-taker)");
+				int timesOver = Integer.parseInt(keyboard.nextLine());
 				
 				// making the colors. math to art, amazing.
 				for(int numColors = 0; numColors < randSpots; numColors++) {
@@ -194,7 +213,7 @@ public class FalconPanel extends JPanel {
 						// keeping track of the record min dist, start off with -1 since there's no such thing as neg dist
 						int minDistRecord = -1;
 						
-						for(int checks = 0; checks < randSpots; checks++) {
+						for(int checks = 0; checks < meanList.size(); checks++) {
 							// get dist
 							int distToBin = pt.distanceSquared(meanList.get(checks).getX(), meanList.get(checks).getY());
 							if(minDistRecord == -1 || distToBin < minDistRecord) {
@@ -205,7 +224,7 @@ public class FalconPanel extends JPanel {
 						}
 					}
 					// resetting the averages
-					for(int numBins = 0; numBins < randSpots; numBins++) {
+					for(int numBins = 0; numBins < meanList.size(); numBins++) {
 						int newAvgX = 0;
 						int newAvgY = 0;
 						int numPts = 0;
@@ -220,8 +239,44 @@ public class FalconPanel extends JPanel {
 						newAvgX /= numPts;
 						newAvgY /= numPts;
 						
-						// resetting the mean point of the bin to the new avg
-						meanList.set(numBins, new VotingPoint(newAvgX,newAvgY));
+						// EXPERIMENTAL CODE -- trying to "snap" the points to the closest "blob"
+//							VotingPoint spotOnPoint = new VotingPoint(0,0);
+//							int minDist = -1;
+//							for(VotingPoint pt: pixelList) {
+//								int distAway = pt.distanceSquared(newAvgX, newAvgY);
+//								if(distAway < minDist || minDist == -1) {
+//									spotOnPoint = pt;
+//									minDist = distAway;
+//								}
+//							}
+//							// resetting the mean point of the bin to the new avg
+//							spotOnPoint.setWhichBin(numBins);
+//							meanList.set(numBins, spotOnPoint);
+//							// resetting the mean point of the bin to the new avg
+						// END EXPERIMENTAL CODE
+							meanList.set(numBins, new VotingPoint(newAvgX,newAvgY));
+						// EXPERIMENTAL CODE -- if we put more random points out there and "pepper" each blob,
+						// we're more likely to not have 1 pt going over 2 blobs, and then we can eliminate pts on same blob
+						// this code isn't working for some reason
+//							for(VotingPoint dt: meanList) {
+//								boolean isConnected = true; //if 2 points are on the same blob
+//									if(!(dt == meanList.get(numBins))) {
+//									int xChange = Math.abs(spotOnPoint.getX() - dt.getX());
+//									int yChange = Math.abs(spotOnPoint.getY() - dt.getY());
+//									double slope = yChange/xChange;
+//									for(int x = 5; x < xChange; x+=5) {
+//										for(VotingPoint ot: pixelList) {
+//											if(!(ot.getX() == x + spotOnPoint.getX()) || !(ot.getY() == (int)x*slope + spotOnPoint.getY())) {
+//												isConnected = false;
+//											}
+//										}
+//									}
+//									if(isConnected == true) {
+//										meanList.remove(dt);
+//									}
+//								}
+//							}
+						// END EXPERIMENTAL CODE
 					}
 				}
 				
@@ -236,7 +291,39 @@ public class FalconPanel extends JPanel {
 					destinationImage.setRGB(pt.getX(), pt.getY(), colorList.get(pt.getWhichBin()).getRGB());
 				}
 				
-				System.out.println("Done!");
+				for(VotingPoint pt: meanList) {
+					// drawing a little TIE-fighter for each anchor/avg pt, in the mood of the Star Wars season
+					destinationImage.setRGB(pt.getX(), pt.getY(), 0);
+					destinationImage.setRGB(pt.getX()-1, pt.getY()-1, 0);
+					destinationImage.setRGB(pt.getX()+1, pt.getY()-1, 0);
+					destinationImage.setRGB(pt.getX()-1, pt.getY(), 0);
+					destinationImage.setRGB(pt.getX()+1, pt.getY(), 0);
+					destinationImage.setRGB(pt.getX()-1, pt.getY()+1, 0);
+					destinationImage.setRGB(pt.getX()+1, pt.getY()+1, 0);
+				}
+				
+				break;
+			case 10: // transfer (dest to source)
+				for(int i = 0; i < destinationImage.getWidth(); i++) {
+					for(int j = 0; j < destinationImage.getHeight(); j++) {
+						sourceImage.setRGB(i, j, (destinationImage.getRGB(i,j)));
+					}
+				}
+			case 11:
+				ArrayList<VotingPoint> pixelList2 = new ArrayList<VotingPoint>();
+				for(int i = 1; i < destinationImage.getWidth()-1; i++) {
+					for(int j = 1; j < destinationImage.getHeight()-1; j++) {
+						int diffBelow = (int) Math.pow(getBrightnessAtPoint(i,j)-getBrightnessAtPoint(i,j+1), 2);
+						int diffRight = (int) Math.pow(getBrightnessAtPoint(i,j)-getBrightnessAtPoint(i+1,j), 2);
+						if(diffBelow > 1000 || diffRight > 1000) { // 63 = ~25% brightness
+							pixelList2.add(new VotingPoint(i,j));
+						}
+					}
+				}
+				for(VotingPoint pt: pixelList2) {
+					destinationImage.setRGB(pt.getX(), pt.getY(), (1<<24) - 1);
+				}
+				repaint();
 				break;
 			case -1:
 			default:
@@ -248,7 +335,17 @@ public class FalconPanel extends JPanel {
 				}
 				break;
 		}
+		System.out.println("Would you like the source image to be changed too? (useful for applying multiple effects)\n(y/n)");
+		String changeSource = keyboard.nextLine();
+		if(changeSource.toUpperCase().equals("Y") && b != 10) {
+			for(int i = 0; i < destinationImage.getWidth(); i++) {
+				for(int j = 0; j < destinationImage.getHeight(); j++) {
+					sourceImage.setRGB(i, j, (destinationImage.getRGB(i,j)));
+				}
+			}
+		}
 		repaint();
+		System.out.println("Done!\n");
 	}
 	
 	/**
