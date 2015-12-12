@@ -9,6 +9,8 @@ Creating some fun filters in Java; graphical interface, but run via console
 
 ## Experimental Code
 There is some experimental code around the re-averaging that might interest you. There were 2 things I was trying to do:
+
 1. Make points "stick" to the side of blobs -- got it working, but didn't like it as much
 2. Judge whether there were lines of VotingPoints from one average/anchor point to another
+
 This one was pretty hard to do, and I was not able to get it fully working. I think that if both of these ran together, it could be pretty powerful, if you were willing to allot more random points (so each blob has multiple).
